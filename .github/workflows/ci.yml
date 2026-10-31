@@ -1,0 +1,78 @@
+# Runs on every push and pull request. A green tick means the code builds, the unit tests pass,
+# and a real teacher-and-student run through the app works end to end.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Build
+        run: |
+          cp .env.example .env
+          pnpm build
+
+  e2e:
+    name: End-to-end (teacher + student)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: handsup
+          POSTGRES_PASSWORD: handsup
+          POSTGRES_DB: handsup
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U handsup" --health-interval 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Settings for the test run (throwaway secrets, no AI keys)
+        run: |
+          cp .env.example .env
+          sed -i "s|^AUTH_SECRET=.*|AUTH_SECRET=$(openssl rand -base64 32)|" .env
+          sed -i "s|^REALTIME_SECRET=.*|REALTIME_SECRET=$(openssl rand -base64 32)|" .env
+          sed -i "s|^LOCAL_MODELS=.*|LOCAL_MODELS=off|" .env
+      - run: pnpm db:migrate
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+        env:
+          CI: "true"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            e2e/test-results
+          retention-days: 7
