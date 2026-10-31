@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Quiz-app look from the design: warm paper, ink pills, coral hero cards, candy badges. */
+:root {
+  --bg: 238 235 229;
+  --card: 251 250 247;
+  --ink: 18 18 18;
+  --muted: 104 99 92;
+  --line: 225 221 213;
+  --text2: 59 56 50;
+  --on-ink: 255 255 255;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: 27 26 24;
+    --card: 39 37 33;
+    --ink: 242 239 233;
+    --muted: 166 160 150;
+    --line: 58 55 50;
+    --text2: 214 209 200;
+    --on-ink: 18 18 18;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: 27 26 24;
+  --card: 39 37 33;
+  --ink: 242 239 233;
+  --muted: 166 160 150;
+  --line: 58 55 50;
+  --text2: 214 209 200;
+  --on-ink: 18 18 18;
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: rgb(var(--bg));
+  color: rgb(var(--ink));
+}
+body {
+  @apply font-cond antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scroll-in reveal for public pages (see components/Reveal.tsx). */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* People who ask their device for less motion get none: every animation and transition ends at once. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer components {
+  .poster {
+    @apply font-poster leading-[0.95] tracking-tight;
+  }
+  .pill {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-ink px-5 py-2.5 font-semibold tracking-wide text-on-ink transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .pill-coral {
+    @apply pill bg-coral text-white;
+  }
+  .pill-ghost {
+    @apply pill bg-card text-ink shadow-soft;
+  }
+  .pill-sm {
+    @apply px-3.5 py-1.5 text-sm;
+  }
+  .card {
+    @apply rounded-3xl bg-card shadow-soft;
+  }
+  .field {
+    @apply w-full rounded-2xl border border-line bg-card px-4 py-3 text-base text-ink outline-none placeholder:text-muted focus:border-ink;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-muted;
+  }
+  .badge {
+    @apply flex h-10 w-10 flex-none items-center justify-center rounded-full font-semibold tracking-wide text-white;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-muted;
+  }
+}
+
+/* Confetti strips on hero cards */
+.confetti b {
+  position: absolute;
+  width: 30px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+/* Accessibility: coral used as text needs more contrast than coral used as a background. */
+.text-coral {
+  color: #b13e28;
+}
+:root[data-theme="dark"] .text-coral {
+  color: #f08a6f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .text-coral {
+    color: #f08a6f;
+  }
+}
+
+/* A clear focus ring for keyboard users on every interactive element. */
+:focus-visible {
+  outline: 3px solid #cc4a31;
+  outline-offset: 2px;
+  border-radius: 9999px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-radius: 1rem;
+}
+
+/* "Skip to content" link: hidden until focused with the keyboard. */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  border-radius: 9999px;
+  background: rgb(var(--ink));
+  color: rgb(var(--on-ink));
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+main:focus {
+  outline: none;
+}
