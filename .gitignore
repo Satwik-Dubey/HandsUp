@@ -1,0 +1,17 @@
+node_modules
+.next
+dist
+.env
+.env.local
+*.log
+.DS_Store
+.turbo
+next-env.d.ts
+*.tsbuildinfo
+.cache
+
+# Test output
+playwright-report/
+test-results/
+e2e/test-results/
+dump.rdb

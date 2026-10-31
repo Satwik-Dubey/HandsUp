@@ -1,0 +1,31 @@
+{
+  "name": "handsup",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Live, anonymous classroom feedback.",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @handsup/web --filter @handsup/gateway --filter @handsup/workers dev",
+    "dev:web": "pnpm --filter @handsup/web dev",
+    "dev:gateway": "pnpm --filter @handsup/gateway dev",
+    "dev:workers": "pnpm --filter @handsup/workers dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:generate": "pnpm --filter @handsup/db generate",
+    "db:migrate": "pnpm --filter @handsup/db migrate",
+    "db:studio": "pnpm --filter @handsup/db studio",
+    "simulate": "pnpm --filter @handsup/gateway simulate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test --config e2e/playwright.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "vitest": "3.2.4"
+  }
+}

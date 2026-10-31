@@ -1,0 +1,33 @@
+# Local Postgres (with pgvector) and Redis for development.
+# Start: pnpm db:up   Stop: pnpm db:down   Wipe data: docker compose down -v
+name: handsup
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: handsup
+      POSTGRES_PASSWORD: handsup
+      POSTGRES_DB: handsup
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U handsup"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:
