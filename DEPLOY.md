@@ -8,10 +8,11 @@
 | Redis | **Render Key Value** | 25 MB, no command limit |
 
 ```
-phones & teachers ──► Vercel (website) ──────────────► Neon Postgres
-        │                    │                              ▲
-        │                    └─► Render Redis ◄──┐          │
-        └── websocket ──► Render: gateway + workers ────────┘
+teachers & phones ──► Vercel (website) ──────────────────────► Neon Postgres
+        │                    │ go live / end class / join checks      ▲
+        │                    ▼                                         │
+        └── websocket ──► Render: gateway + workers ◄──► Render Redis   │
+                             └─────────────────────────────────────────┘
 ```
 
 Total time: about 45 minutes the first time. Do every step in your own accounts. Keep the connection strings and secrets in a safe place, such as Notes, and never put them in GitHub or a chat.
@@ -48,7 +49,7 @@ The file `render.yaml` in the repo describes both, so Render sets them up togeth
    - `GROQ_API_KEY`, `GEMINI_API_KEY`: your keys, or leave them empty (alerts and reports still work with built-in wording).
 4. Press **Apply**. The first build takes about 5 minutes.
 5. When the service shows **Live**, copy its address from the top of the page, e.g. `https://handsup-realtime.onrender.com`. This is your **gateway URL**. Open `<gateway URL>/health` in the browser: it should say `{"ok":true,"redis":"ready"}`.
-6. Open **handsup-redis → Connect → External**, and copy the **External Key Value URL** (it starts with `rediss://`). This is the **REDIS_URL for Vercel**. The live server uses the internal one automatically.
+Only the live server talks to Redis. The website sends its few messages (go live, end class, join checks) through the live server, so Vercel needs no Redis address.
 
 ## 3. Website: Vercel
 
@@ -57,7 +58,6 @@ The file `render.yaml` in the repo describes both, so Render sets them up togeth
 3. **Environment Variables**, one per line:
    ```
    DATABASE_URL=<your Neon string>
-   REDIS_URL=<the rediss:// External URL from step 2.6>
    AUTH_SECRET=<first secret from step 0>
    REALTIME_SECRET=<second secret from step 0, same as on Render>
    AUTH_GOOGLE_ID=<from Google Cloud, same as in your .env>
@@ -110,7 +110,7 @@ Push to GitHub's `main` branch: Vercel and Render redeploy by themselves. When a
 - **Dashboard says "Waking up the live server…" for over 2 minutes:** open `<gateway URL>/health`. If it doesn't load, open Render → handsup-realtime → **Logs**. A `Missing DATABASE_URL` or `Missing REALTIME_SECRET` line means an empty variable.
 - **Dashboard can't connect, but `/health` works:** `CORS_ORIGINS` on Render doesn't exactly match your site's address, or `NEXT_PUBLIC_GATEWAY_URL` on Vercel is wrong (after fixing it, **Redeploy**).
 - **"Sign-in expired" on the dashboard right away:** `REALTIME_SECRET` differs between Vercel and Render.
-- **Students can't join ("something went wrong") or Go live does nothing:** Vercel can't reach Redis. Check that `REDIS_URL` on Vercel is the **External** `rediss://` URL.
+- **Students can't join, or Go live takes a long time:** the website reaches the live server at `NEXT_PUBLIC_GATEWAY_URL` using `REALTIME_SECRET`. Check both on Vercel. Don't set `REDIS_URL` on Vercel.
 - **Report never appears:** check Render's logs for `[report]` lines. The workers run inside the same service.
 - **Google error `redirect_uri_mismatch`:** step 5.
 - **Vercel build fails:** check that **Root Directory** is `apps/web`. The error log on Vercel shows which file failed.

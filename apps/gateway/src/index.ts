@@ -1,4 +1,5 @@
-import { createServer } from "node:http";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { timingSafeEqual } from "node:crypto";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { closeDb } from "@handsup/db";
 import { activeCount, computeSnapshot, trimSession } from "@handsup/server";
@@ -39,8 +40,62 @@ const http = createServer((req, res) => {
     );
     return;
   }
+  if (req.url?.startsWith("/internal/") && req.method === "POST") {
+    handleInternal(req, res).catch((e) => {
+      console.error("[internal]", e);
+      if (!res.headersSent) res.writeHead(500).end();
+    });
+    return;
+  }
   res.writeHead(404).end();
 });
+
+/**
+ * Server-to-server calls from the website, for hosts where the website can't reach Redis
+ * itself (e.g. Vercel + Render's free Redis). Protected by REALTIME_SECRET.
+ *   POST /internal/control        body: ControlMessage          → published on the control channel
+ *   POST /internal/join-attempts  body: { ip, miss?: boolean }   → { count } wrong-code attempts this minute
+ */
+async function handleInternal(req: IncomingMessage, res: ServerResponse) {
+  const given = Buffer.from((req.headers.authorization ?? "").replace(/^Bearer /, ""));
+  const want = Buffer.from(env.realtimeSecretText);
+  if (given.length !== want.length || !timingSafeEqual(given, want)) {
+    res.writeHead(401).end();
+    return;
+  }
+  let raw = "";
+  for await (const chunk of req) {
+    raw += chunk;
+    if (raw.length > 10_000) {
+      res.writeHead(413).end();
+      return;
+    }
+  }
+  const body = JSON.parse(raw || "{}");
+  const json = (data: unknown) => {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify(data));
+  };
+
+  if (req.url === "/internal/control") {
+    const types = ["session:status", "session:updated", "demo:start"];
+    if (!types.includes(body?.type) || typeof body?.sessionId !== "string") {
+      res.writeHead(400).end();
+      return;
+    }
+    await pub.publish(rk.controlChannel, JSON.stringify(body as ControlMessage));
+    return json({ ok: true });
+  }
+  if (req.url === "/internal/join-attempts") {
+    const key = rk.joinAttempts(String(body?.ip ?? "unknown"));
+    if (body?.miss) {
+      const [[, count]] = (await redis.multi().incr(key).expire(key, 60).exec()) as [[unknown, number]];
+      return json({ count });
+    }
+    return json({ count: Number((await redis.get(key)) ?? 0) });
+  }
+  res.writeHead(404).end();
+}
 
 const io = new Server(http, {
   cors: { origin: env.corsOrigins.length ? env.corsOrigins : true, credentials: true },

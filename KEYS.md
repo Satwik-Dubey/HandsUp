@@ -32,7 +32,7 @@ Your old courses and lectures carry over only if both folders are named `handsup
 | `AUTH_SECRET` | **Yes** | Signs teacher sign-in sessions | Generate: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` |
 | `REALTIME_SECRET` | **Yes** | Lets the web app and the gateway trust each other | Generate the same way (a different value) |
 | `DATABASE_URL` | **Yes** | Postgres | Local: already set for Docker. Online: Neon (see DEPLOY.md) |
-| `REDIS_URL` | **Yes** | Redis | Local: already set for Docker. Online: Render Key Value (see DEPLOY.md) |
+| `REDIS_URL` | **Yes** | Redis | Local: already set for Docker. Online: Render Key Value, set on the live server only (not on Vercel) |
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | For real teachers | "Continue with Google" | Google Cloud Console, steps in docs/SETUP.md section 4 |
 | `GROQ_API_KEY` | Optional | Live AI insights and names for question groups | https://console.groq.com → **API Keys** → **Create API Key** (starts with `gsk_`). Free. |
 | `GEMINI_API_KEY` | Optional | AI-written summary in the after-class report | https://aistudio.google.com/apikey → **Create API key**. Free. |

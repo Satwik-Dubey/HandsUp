@@ -1,8 +1,8 @@
 import "server-only";
 import { courses, eq, sessions, teachers } from "@handsup/db";
-import { DEFAULT_SETTINGS, LIMITS, isValidJoinCode, normalizeJoinCode, rk, type JoinInfo } from "@handsup/shared";
+import { DEFAULT_SETTINGS, LIMITS, isValidJoinCode, normalizeJoinCode, type JoinInfo } from "@handsup/shared";
 import { db } from "./db";
-import { getRedis } from "./redis";
+import { joinAttempts } from "./redis";
 
 export type JoinLookup = { ok: true; info: JoinInfo } | { ok: false; error: "not_found" | "too_many_attempts" };
 
@@ -12,9 +12,7 @@ export type JoinLookup = { ok: true; info: JoinInfo } | { ok: false; error: "not
  */
 export async function lookupJoinCode(rawCode: string, ip: string): Promise<JoinLookup> {
   const code = normalizeJoinCode(rawCode);
-  const redis = getRedis();
-  const key = rk.joinAttempts(ip);
-  if (Number((await redis.get(key)) ?? 0) >= LIMITS.joinAttemptsPerMinute) return { ok: false, error: "too_many_attempts" };
+  if ((await joinAttempts(ip)) >= LIMITS.joinAttemptsPerMinute) return { ok: false, error: "too_many_attempts" };
 
   const row = isValidJoinCode(code)
     ? (
@@ -38,7 +36,7 @@ export async function lookupJoinCode(rawCode: string, ip: string): Promise<JoinL
     : undefined;
 
   if (!row) {
-    await redis.multi().incr(key).expire(key, 60).exec();
+    await joinAttempts(ip, true);
     return { ok: false, error: "not_found" };
   }
 

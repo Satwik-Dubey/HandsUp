@@ -13,6 +13,8 @@ export const env = {
   redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
   databaseUrl: required("DATABASE_URL"),
   realtimeSecret: new TextEncoder().encode(required("REALTIME_SECRET")),
+  /** The same secret as text, to check the website's server-to-server calls (/internal/...). */
+  realtimeSecretText: required("REALTIME_SECRET"),
   corsOrigins: (process.env.CORS_ORIGINS ?? "")
     .split(",")
     .map((s) => s.trim())

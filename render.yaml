@@ -45,7 +45,5 @@ services:
     region: singapore
     # Never drop keys when full: live counters and streams must not vanish mid-class.
     maxmemoryPolicy: noeviction
-    # Vercel (the website) connects from outside Render, so allow external connections (password + TLS protected).
-    ipAllowList:
-      - source: 0.0.0.0/0
-        description: everywhere
+    # Only the live server (inside Render) uses Redis; the website reaches it through the live server.
+    ipAllowList: []
