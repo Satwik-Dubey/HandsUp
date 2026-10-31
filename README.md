@@ -149,3 +149,7 @@ Runs on free plans: the website on **Vercel**, the gateway and workers together 
 ## Credits
 
 Fonts: [Anton](https://fonts.google.com/specimen/Anton) and [Oswald](https://fonts.google.com/specimen/Oswald) (SIL Open Font License). Icons: [Lucide](https://lucide.dev) (ISC). Local models: [Xenova/all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2) and DistilBERT SST-2 via [Transformers.js](https://huggingface.co/docs/transformers.js).
+
+## License
+
+[MIT](LICENSE). Free to use, change and share, as long as the copyright notice stays.

@@ -1,6 +1,7 @@
 {
   "name": "handsup",
   "private": true,
+  "license": "MIT",
   "version": "1.0.0",
   "description": "Live, anonymous classroom feedback.",
   "packageManager": "pnpm@10.28.0",
