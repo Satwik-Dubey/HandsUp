@@ -244,7 +244,7 @@ async function handleReact(socket: StudentSocket, raw: unknown): Promise<ReactAc
     p.hincrby(secKey, r, n);
     p.zadd(rk.reactors(sessionId, r), now, device);
     // Raw events go on the stream; the aggregator worker folds them into 5-second windows.
-    p.xadd(rk.eventsStream, "MAXLEN", "~", "100000", "*", "sid", sessionId, "stu", studentId ?? "", "k", String(EVENT_KIND[r]), "v", String(n), "t", String(now));
+    p.xadd(rk.eventsStream, "MAXLEN", "~", env.streamMaxLen, "*", "sid", sessionId, "stu", studentId ?? "", "k", String(EVENT_KIND[r]), "v", String(n), "t", String(now));
   }
   p.expire(secKey, 130);
   p.zadd(rk.reactors(sessionId, "any"), now, device);
@@ -270,7 +270,7 @@ async function handleRate(socket: StudentSocket, raw: unknown): Promise<ReactAck
     .pipeline()
     .hset(rk.rating(sessionId), device, value)
     .zadd(rk.presence(sessionId), now, device)
-    .xadd(rk.eventsStream, "MAXLEN", "~", "100000", "*", "sid", sessionId, "stu", studentId ?? "", "k", String(EVENT_KIND.rating), "v", String(value), "t", String(now))
+    .xadd(rk.eventsStream, "MAXLEN", "~", env.streamMaxLen, "*", "sid", sessionId, "stu", studentId ?? "", "k", String(EVENT_KIND.rating), "v", String(value), "t", String(now))
     .exec();
   return { seq, ok: true };
 }

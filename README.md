@@ -8,13 +8,13 @@ The teacher sees how well the room is following in real time and gets an AI-writ
 </p>
 
 <p align="center">
-  <img src="docs/dashboard.png" alt="The teacher's live dashboard: students here, engagement, an Understanding score, a timeline and AI insight cards" width="900">
+  <img src="docs/screenshots/dashboard.png" alt="The teacher's live dashboard: students here, engagement, an Understanding score, a timeline and AI insight cards" width="900">
 </p>
 
 <p align="center">
-  <img src="docs/student.png" alt="The student phone screen with Got it, Too fast, Too slow, Example and I'm confused buttons" width="260">
+  <img src="docs/screenshots/student.png" alt="The student phone screen with Got it, Too fast, Too slow, Example and I'm confused buttons" width="260">
   &nbsp;&nbsp;
-  <img src="docs/report.png" alt="The after-class report with an AI summary, key numbers, an understanding chart and the most asked questions" width="600">
+  <img src="docs/screenshots/report.png" alt="The after-class report with an AI summary, key numbers, an understanding chart and the most asked questions" width="600">
 </p>
 
 ---
@@ -106,7 +106,9 @@ handsup/
 ├── docs/
 │   ├── SETUP.md             # full local setup, Google sign-in, phone testing, troubleshooting
 │   └── screenshots/         # images used in this README
+├── scripts/realtime.mjs     # runs gateway + workers as one service (free hosting)
 ├── .github/workflows/       # CI: typecheck, unit tests, build, e2e on every push
+├── render.yaml              # Render blueprint: live server + Redis
 ├── docker-compose.yml       # local Postgres (pgvector) + Redis
 ├── .env.example             # every setting, with comments (copy to .env)
 ├── KEYS.md                  # what each key is for and where to get it
@@ -142,7 +144,7 @@ The full guide, including Google sign-in, AI keys, testing on a real phone and t
 
 ## Deployment
 
-The web app runs on any Next.js host (for example Vercel). The gateway and workers need an always-on Node host, plus Postgres with pgvector (for example Neon) and Redis. Step-by-step instructions are in **[DEPLOY.md](DEPLOY.md)**.
+Runs on free plans: the website on **Vercel**, the gateway and workers together as one **Render** service (`scripts/realtime.mjs`, set up by `render.yaml`), Redis on **Render Key Value** and Postgres on **Neon**. Step-by-step instructions are in **[DEPLOY.md](DEPLOY.md)**.
 
 ## Credits
 

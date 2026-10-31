@@ -48,11 +48,18 @@ export function LiveDashboard({
   const router = useRouter();
   const live = useLive();
   const { tick, timeline, segments, segment, questions, activePoll, results, connected, error, clusters, insights } = live;
+  // A free server sleeps when nobody uses it; after 6 s without a connection, say why it's slow.
+  useEffect(() => {
+    if (connected) return setSlowConnect(false);
+    const t = setTimeout(() => setSlowConnect(true), 6000);
+    return () => clearTimeout(t);
+  }, [connected]);
   const [qTab, setQTab] = useState<QuestionsTab>("top");
   const [focus, setFocus] = useState<string | null>(null);
   const [addingPoll, setAddingPoll] = useState(false);
   const [qrSignal, setQrSignal] = useState(0);
   const [showKeys, setShowKeys] = useState(false);
+  const [slowConnect, setSlowConnect] = useState(false);
   // Alert sound: off by default, remembered on this computer.
   const [soundOn, setSoundOn] = useState(false);
   const soundRef = useRef(false);
@@ -341,12 +348,12 @@ export function LiveDashboard({
 
       {!connected && (
         <p role="status" className="rounded-2xl bg-coral/15 px-4 py-3 text-coral">
-          {error ?? "Connecting to the live server…"}
+          {error ?? (slowConnect ? "Waking up the live server… on a free server this can take up to a minute after a quiet spell." : "Connecting to the live server…")}
         </p>
       )}
       {status === "draft" && (
         <p className="rounded-2xl bg-sun/25 px-4 py-3">
-          ⏳ Not live yet. Students can join with <b>{session.code}</b> and wait; their buttons switch on when you press Go live.
+          Not live yet. Students can join with <b>{session.code}</b> and wait; their buttons switch on when you press Go live.
         </p>
       )}
 

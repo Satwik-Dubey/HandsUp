@@ -1,0 +1,51 @@
+# Render Blueprint: the realtime gateway + background workers (one free web service)
+# and a free Redis (Render Key Value). The website goes on Vercel, the database on Neon.
+# In Render: New → Blueprint → pick this repo. See DEPLOY.md.
+services:
+  - type: web
+    name: handsup-realtime
+    runtime: node
+    plan: free
+    region: singapore # keep the same region as the Redis below and close to Neon
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --filter "@handsup/gateway..." --filter "@handsup/workers..." && pnpm --filter @handsup/gateway --filter @handsup/workers build
+    startCommand: node scripts/realtime.mjs
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: handsup-redis
+          property: connectionString
+      # The free plan has 512 MB of memory: skip the local models, grouping uses the word-based method.
+      - key: LOCAL_MODELS
+        value: "off"
+      # Keep Redis streams short so they fit the free 25 MB Redis.
+      - key: STREAM_MAXLEN
+        value: "20000"
+      # Asked for when you create the Blueprint:
+      - key: DATABASE_URL
+        sync: false
+      - key: REALTIME_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: keyvalue
+    name: handsup-redis
+    plan: free
+    region: singapore
+    # Never drop keys when full: live counters and streams must not vanish mid-class.
+    maxmemoryPolicy: noeviction
+    # Vercel (the website) connects from outside Render, so allow external connections (password + TLS protected).
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere

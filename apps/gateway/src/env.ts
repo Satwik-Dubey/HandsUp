@@ -18,4 +18,6 @@ export const env = {
     .map((s) => s.trim())
     .filter(Boolean),
   isProd: process.env.NODE_ENV === "production",
+  /** How many entries the Redis streams keep (approximately). Lower it on a small Redis. */
+  streamMaxLen: String(Number(process.env.STREAM_MAXLEN) || 100000),
 };

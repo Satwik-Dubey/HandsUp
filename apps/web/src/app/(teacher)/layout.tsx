@@ -2,6 +2,7 @@ import { Library } from "lucide-react";
 import { Ico } from "@/components/icons";
 import Link from "next/link";
 import { signOut } from "@/auth";
+import { GatewayWake } from "@/components/GatewayWake";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { requireTeacher } from "@/lib/teacher";
@@ -15,6 +16,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
 
   return (
     <div className="min-h-dvh">
+      <GatewayWake />
       <header className="sticky top-0 z-20 border-b border-line bg-paper/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
           <Logo />

@@ -117,7 +117,7 @@ export async function handleAsk(ctx: { sessionId?: string; studentId?: string; d
   if (!row) return { ok: false, reason: "invalid" };
 
   // The NLP worker reads this stream to group questions; the aggregator counts it per window.
-  await redis.xadd(rk.questionsStream, "MAXLEN", "~", "100000", "*", "sid", sessionId, "qid", row.id, "t", String(now));
+  await redis.xadd(rk.questionsStream, "MAXLEN", "~", env.streamMaxLen, "*", "sid", sessionId, "qid", row.id, "t", String(now));
 
   if (status === "hidden") return { ok: true, id: row.id, status: "pending" };
   const q: TeacherQuestion = { id: row.id, text, votes: 0, status, createdAt: row.createdAt.getTime(), segmentLabel: segment?.label ?? null, clusterId: null };

@@ -16,7 +16,7 @@ Mac: `brew install k6` (other systems: https://grafana.com/docs/k6/latest/set-up
    k6 run -e CODE=YOURCODE loadtest/students.js
    ```
 
-   Options: `-e STUDENTS=500` (default 1000), `-e MINUTES=3` (default 5), `-e GATEWAY=wss://your-gateway.up.railway.app` to test a deployed gateway.
+   Options: `-e STUDENTS=500` (default 1000), `-e MINUTES=3` (default 5), `-e GATEWAY=wss://handsup-realtime.onrender.com` to test a deployed gateway.
 
 4. Watch the dashboard while it runs. `http://localhost:4000/metrics` shows how many sockets the gateway holds.
 
